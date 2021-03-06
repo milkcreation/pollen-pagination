@@ -1,0 +1,50 @@
+{
+  "name": "pollen-solutions/pagination",
+  "description": "Pollen Pagination Component",
+  "homepage": "https://www.presstify.com/pollen-solutions/pagination/",
+  "keywords": [
+    "presstify",
+    "plugins",
+    "pagination"
+  ],
+  "time": "2020-03-06",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Jordy Manner",
+      "email": "jordy@presstify.com",
+      "role": "Developper"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://composer.presstify.com/pollen-solutions/"
+    }
+  ],
+  "require": {
+    "composer/installers": "~1.0",
+    "pollen-solutions/http": "^1.0",
+    "pollen-solutions/support": "^1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Pollen\\Pagination\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Pollen\\Pagination\\Test\\": "tests"
+    }
+  },
+  "suggest": {
+    "pollen-solutions/container" : "Pollen Container Component - PSR-11 ready Dependencies Injection Container"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true
+  }
+}
