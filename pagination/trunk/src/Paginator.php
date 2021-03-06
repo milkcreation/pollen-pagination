@@ -1,0 +1,350 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Pollen\Pagination;
+
+use Pollen\Http\UrlHelper;
+use Pollen\Http\UrlManipulator;
+use Pollen\Support\Proxy\HttpRequestProxy;
+use Psr\Http\Message\UriInterface;
+use RuntimeException;
+use Throwable;
+
+class Paginator implements PaginatorInterface
+{
+    use HttpRequestProxy;
+
+    /**
+     * Instance de l'url de base.
+     * @var UriInterface|null
+     */
+    protected $baseUrl;
+
+    /**
+     * Numéro de la page courante.
+     * @var int
+     */
+    protected $currentPage = 1;
+
+    /**
+     * Nombre d'éléments courant.
+     * @var int
+     */
+    protected $count = 0;
+
+    /**
+     * Numéro de la dernière page.
+     * @var int
+     */
+    protected $lastPage = 1;
+
+    /**
+     * La ligne de démarrage du traitement.
+     * @var int
+     */
+    protected $offset = 0;
+
+    /**
+     * Indice de qualification des pages.
+     * @var string
+     */
+    protected $pageIndex = 'page';
+
+    /**
+     * Nombre d'éléments par page.
+     * @var int|null
+     */
+    protected $perPage;
+
+    /**
+     * Indicateur d'url basée sur la segmentation.
+     * @internal false : {{ base_url }}/?{{ pageIndex }}={{ num }} | true :{{ base_url }}/{{ pageIndex }}/{{ num }}
+     *
+     * @var bool
+     */
+    protected $segmented = false;
+
+    /**
+     * Nombre total d'éléments.
+     * @var int
+     */
+    protected $total = 0;
+
+    /**
+     * @param array $args
+     */
+    public function __construct(array $args = [])
+    {
+        if (!empty($args)) {
+            $this->parseArgs($args);
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getBaseUrl(): ?UriInterface
+    {
+        return $this->baseUrl;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCount(): int
+    {
+        return $this->count;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCurrentPage(): int
+    {
+        return $this->currentPage;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLastPage(): int
+    {
+        return $this->lastPage;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOffset(): int
+    {
+        return $this->offset;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPageIndex(): string
+    {
+        return $this->pageIndex;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPageNumUrl(int $num): string
+    {
+        if (!$this->getBaseUrl()) {
+            $this->setBaseUrl();
+        }
+
+        $url = new UrlManipulator($this->getBaseUrl());
+
+        if (preg_match('/%d/', $url->decoded())) {
+            return urlencode(sprintf($url->decoded(), $num));
+        }
+        if ($this->isSegmented()) {
+            $url = $url->deleteSegment("/{$this->getPageIndex()}/\d+");
+
+            return $num > 1 ? $url->appendSegment("/{$this->getPageIndex()}/{$num}")->render() : $url->render();
+        }
+
+        $url = $url->without([$this->getPageIndex()]);
+
+        return $num > 1 ? $url->with([$this->getPageIndex() => $num])->render() : $url->render();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPerPage(): ?int
+    {
+        return $this->perPage;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getTotal(): int
+    {
+        return $this->total;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isSegmented(): bool
+    {
+        return $this->segmented;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function jsonSerialize(): array
+    {
+        return $this->toArray();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function parseArgs(array $args): void
+    {
+        if ($baseUrl = $args['base_url'] ?? null) {
+            $this->setBaseUrl($baseUrl);
+        }
+
+        if ($count = $args['count'] ?? null) {
+            $this->setCount($count);
+        }
+
+        if ($currentPage = $args['current_page'] ?? null) {
+            $this->setCurrentPage($currentPage);
+        }
+
+        if ($lastPage = $args['last_page'] ?? null) {
+            $this->setLastPage($lastPage);
+        }
+
+        if ($pageIndex = $args['page_index'] ?? null) {
+            $this->setPageIndex($pageIndex);
+        }
+
+        if ($per_page = $args['per_page'] ?? null) {
+            $this->setPerPage($per_page);
+        }
+
+        if ($segmentUrl = $args['segmented'] ?? null) {
+            $this->setSegmenting($segmentUrl);
+        }
+
+        if ($total = $args['total'] ?? null) {
+            $this->setTotal($total);
+        }
+
+        if ($offset = $args['offset'] ?? null) {
+            $this->setOffset($offset);
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setBaseUrl(?string $base_url = null): PaginatorInterface
+    {
+        $this->baseUrl = is_null($base_url)
+            ? (new UrlHelper($this->httpRequest))->getAbsoluteUri() : (new UrlManipulator($base_url))->get();
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setCount(int $count): PaginatorInterface
+    {
+        $this->count = $count;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setCurrentPage(int $page): PaginatorInterface
+    {
+        $this->currentPage = $page > 0 ? $page : 1;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setLastPage(int $last_page): PaginatorInterface
+    {
+        $this->lastPage = $last_page;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setOffset(int $offset): PaginatorInterface
+    {
+        $this->offset = $offset;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setPageIndex(string $index = 'page'): PaginatorInterface
+    {
+        $this->pageIndex = $index;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setPerPage(?int $per_page = null): PaginatorInterface
+    {
+        $this->perPage = $per_page > 0 ? $per_page : null;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setSegmenting(bool $segmented = true): PaginatorInterface
+    {
+        $this->segmented = $segmented;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setTotal(int $total): PaginatorInterface
+    {
+        $this->total = $total;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function toArray(): array
+    {
+        return [
+            'base_url'     => $this->baseUrl,
+            'current_page' => $this->currentPage,
+            'count'        => $this->count,
+            'last_page'    => $this->lastPage,
+            'offset'       => $this->offset,
+            'page_index'   => $this->pageIndex,
+            'per_page'     => $this->perPage,
+            'total'        => $this->total,
+        ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function toJson(): string
+    {
+        try {
+            return json_encode($this->jsonSerialize(), JSON_THROW_ON_ERROR);
+        } catch(Throwable $e) {
+            throw new RuntimeException('Paginator could not encode to JSON');
+        }
+    }
+}
