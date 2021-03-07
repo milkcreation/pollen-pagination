@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Pollen\Pagination;
 
-use Pollen\Http\UrlHelper;
 use Pollen\Http\UrlManipulator;
 use Pollen\Support\Proxy\HttpRequestProxy;
 use Psr\Http\Message\UriInterface;
@@ -29,9 +28,9 @@ class Paginator implements PaginatorInterface
 
     /**
      * Nombre d'éléments courant.
-     * @var int
+     * @var int|null
      */
-    protected $count = 0;
+    protected $count;
 
     /**
      * Numéro de la dernière page.
@@ -86,6 +85,10 @@ class Paginator implements PaginatorInterface
      */
     public function getBaseUrl(): ?UriInterface
     {
+        if ($this->baseUrl === null) {
+            $this->baseUrl = (new UrlManipulator($this->httpRequest()->getUri()))->get();
+        }
+
         return $this->baseUrl;
     }
 
@@ -94,7 +97,11 @@ class Paginator implements PaginatorInterface
      */
     public function getCount(): int
     {
-        return $this->count;
+        $count = $this->count;
+        if ($count === null) {
+            $count = $this->getPerPage();
+        }
+        return $count;
     }
 
     /**
@@ -108,9 +115,43 @@ class Paginator implements PaginatorInterface
     /**
      * @inheritDoc
      */
+    public function getFirstPageUrl(): string
+    {
+        return $this->getPageNumUrl(1);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLastPageUrl(): string
+    {
+        return $this->getPageNumUrl($this->getLastPage());
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getLastPage(): int
     {
-        return $this->lastPage;
+        return $this->lastPage = (int)ceil($this->getTotal()/$this->getPerPage());
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getNextPage(): int
+    {
+        $num = $this->getCurrentPage() + 1;
+
+        return $num < $this->getLastPage() ? $num : 0;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getNextPageUrl(): string
+    {
+        return ($next = $this->getNextPage()) ? $this->getPageNumUrl($next) : '';
     }
 
     /**
@@ -134,10 +175,6 @@ class Paginator implements PaginatorInterface
      */
     public function getPageNumUrl(int $num): string
     {
-        if (!$this->getBaseUrl()) {
-            $this->setBaseUrl();
-        }
-
         $url = new UrlManipulator($this->getBaseUrl());
 
         if (preg_match('/%d/', $url->decoded())) {
@@ -160,6 +197,24 @@ class Paginator implements PaginatorInterface
     public function getPerPage(): ?int
     {
         return $this->perPage;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPreviousPage(): int
+    {
+        $num = $this->getCurrentPage() - 1;
+
+        return $num > 0 ? $num : 0;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPreviousPageUrl(): string
+    {
+        return ($prev = $this->getPreviousPage()) ? $this->getPageNumUrl($prev) : '';
     }
 
     /**
@@ -203,10 +258,6 @@ class Paginator implements PaginatorInterface
             $this->setCurrentPage($currentPage);
         }
 
-        if ($lastPage = $args['last_page'] ?? null) {
-            $this->setLastPage($lastPage);
-        }
-
         if ($pageIndex = $args['page_index'] ?? null) {
             $this->setPageIndex($pageIndex);
         }
@@ -231,10 +282,9 @@ class Paginator implements PaginatorInterface
     /**
      * @inheritDoc
      */
-    public function setBaseUrl(?string $base_url = null): PaginatorInterface
+    public function setBaseUrl(string $baseUrl): PaginatorInterface
     {
-        $this->baseUrl = is_null($base_url)
-            ? (new UrlHelper($this->httpRequest))->getAbsoluteUri() : (new UrlManipulator($base_url))->get();
+        $this->baseUrl = (new UrlManipulator($baseUrl))->get();
 
         return $this;
     }
@@ -262,9 +312,9 @@ class Paginator implements PaginatorInterface
     /**
      * @inheritDoc
      */
-    public function setLastPage(int $last_page): PaginatorInterface
+    public function setLastPage(int $lastPage): PaginatorInterface
     {
-        $this->lastPage = $last_page;
+        $this->lastPage = $lastPage;
 
         return $this;
     }
@@ -292,9 +342,9 @@ class Paginator implements PaginatorInterface
     /**
      * @inheritDoc
      */
-    public function setPerPage(?int $per_page = null): PaginatorInterface
+    public function setPerPage(?int $perPage = null): PaginatorInterface
     {
-        $this->perPage = $per_page > 0 ? $per_page : null;
+        $this->perPage = $perPage > 0 ? $perPage : null;
 
         return $this;
     }
@@ -325,14 +375,20 @@ class Paginator implements PaginatorInterface
     public function toArray(): array
     {
         return [
-            'base_url'     => $this->baseUrl,
-            'current_page' => $this->currentPage,
-            'count'        => $this->count,
-            'last_page'    => $this->lastPage,
-            'offset'       => $this->offset,
-            'page_index'   => $this->pageIndex,
-            'per_page'     => $this->perPage,
-            'total'        => $this->total,
+            'base_url'       => (string)$this->getBaseUrl(),
+            'current_page'   => $this->getCurrentPage(),
+            'count'          => $this->getCount(),
+            'first_page_url' => $this->getFirstPageUrl(),
+            'last_page'      => $this->getLastPage(),
+            'last_page_url'  => $this->getLastPageUrl(),
+            'next_page'      => $this->getNextPage(),
+            'next_page_url'  => $this->getNextPageUrl(),
+            'offset'         => $this->getOffset(),
+            'prev_page'      => $this->getPreviousPage(),
+            'prev_page_url'  => $this->getPreviousPageUrl(),
+            'page_index'     => $this->getPageIndex(),
+            'per_page'       => $this->getPerPage(),
+            'total'          => $this->getTotal(),
         ];
     }
 
@@ -343,7 +399,7 @@ class Paginator implements PaginatorInterface
     {
         try {
             return json_encode($this->jsonSerialize(), JSON_THROW_ON_ERROR);
-        } catch(Throwable $e) {
+        } catch (Throwable $e) {
             throw new RuntimeException('Paginator could not encode to JSON');
         }
     }

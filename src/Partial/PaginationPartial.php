@@ -4,17 +4,34 @@ declare(strict_types=1);
 
 namespace Pollen\Pagination\Partial;
 
+use Pollen\Pagination\PaginationManagerInterface;
+use Pollen\Pagination\PaginationProxy;
 use Pollen\Pagination\Paginator;
 use Pollen\Pagination\PaginatorInterface;
 use Pollen\Partial\PartialDriver;
+use Pollen\Partial\PartialManagerInterface;
+use Throwable;
 
-class PaginationPartialDriver extends PartialDriver implements PaginationPartialDriverInterface
+class PaginationPartial extends PartialDriver implements PaginationPartialInterface
 {
+    use PaginationProxy;
+
     /**
      * Instance du gestionnaire de pagination.
      * @var PaginatorInterface
      */
     protected $paginator;
+
+    /**
+     * @param PaginationManagerInterface $pagination
+     * @param PartialManagerInterface $partialManager
+     */
+    public function __construct(PaginationManagerInterface $pagination, PartialManagerInterface $partialManager)
+    {
+        $this->setPaginationManager($pagination);
+
+        parent::__construct($partialManager);
+    }
 
     /**
      * @inheritDoc
@@ -50,7 +67,7 @@ class PaginationPartialDriver extends PartialDriver implements PaginationPartial
                 'numbers'  => true,
             ],
             /**
-             * @var array|PaginatorInterface|object $query
+             * @var array|PaginatorInterface|object $paginator
              */
             'paginator' => null,
         ]);
@@ -101,14 +118,15 @@ class PaginationPartialDriver extends PartialDriver implements PaginationPartial
     {
         if ($this->paginator === null) {
             $paginator = $this->get('paginator');
+
             if ($paginator instanceof PaginatorInterface) {
                 $this->paginator = $paginator;
             } elseif (is_array($paginator)) {
-                $this->paginator = new Paginator();
+                $this->paginator = new Paginator($paginator);
             } elseif (is_object($paginator)) {
                 $this->paginator = new Paginator(get_object_vars($paginator));
             } else {
-                $this->paginator = new Paginator();
+                $this->paginator = $this->pagination()->paginator() ?: new Paginator();
             }
         }
 
@@ -118,16 +136,16 @@ class PaginationPartialDriver extends PartialDriver implements PaginationPartial
     /**
      * @inheritDoc
      */
-    public function parseParams(): void
+    public function render(): string
     {
-        parent::parseParams();
-
         $this->parseUrl();
         $this->parseLinks();
 
         if ($this->get('links.numbers')) {
             $this->parseNumbers();
         }
+
+        return parent::render();
     }
 
     /**
@@ -141,7 +159,7 @@ class PaginationPartialDriver extends PartialDriver implements PaginationPartial
                 'content' => '&laquo;',
                 'attrs'   => [
                     'class' => 'Pagination-itemPage Pagination-itemPage--link',
-                    'href'  => $this->paginator()->getPageNumUrl(1),
+                    'href'  => $this->paginator()->getFirstPageUrl(),
                 ],
             ],
             'last'     => [
@@ -149,7 +167,7 @@ class PaginationPartialDriver extends PartialDriver implements PaginationPartial
                 'content' => '&raquo;',
                 'attrs'   => [
                     'class' => 'Pagination-itemPage Pagination-itemPage--link',
-                    'href'  => $this->paginator()->getPageNumUrl($this->paginator()->getLastPage()),
+                    'href'  => $this->paginator()->getLastPageUrl(),
                 ],
             ],
             'previous' => [
@@ -157,7 +175,7 @@ class PaginationPartialDriver extends PartialDriver implements PaginationPartial
                 'content' => '&lsaquo;',
                 'attrs'   => [
                     'class' => 'Pagination-itemPage Pagination-itemPage--link',
-                    'href'  => $this->paginator()->getPageNumUrl($this->paginator()->getCurrentPage() - 1),
+                    'href'  => $this->paginator()->getPreviousPageUrl(),
                 ],
             ],
             'next'     => [
@@ -165,7 +183,7 @@ class PaginationPartialDriver extends PartialDriver implements PaginationPartial
                 'content' => '&rsaquo;',
                 'attrs'   => [
                     'class' => 'Pagination-itemPage Pagination-itemPage--link',
-                    'href'  => $this->paginator()->getPageNumUrl($this->paginator()->getCurrentPage() + 1),
+                    'href'  => $this->paginator()->getNextPageUrl(),
                 ],
             ],
         ];
@@ -231,19 +249,31 @@ class PaginationPartialDriver extends PartialDriver implements PaginationPartial
     public function parseUrl(): void
     {
         if ($this->has('url.base')) {
-            $this->paginator()->setBaseUrl($this->get('url.base'));
+            try {
+                $this->paginator()->setBaseUrl($this->get('url.base'));
+            } catch (Throwable $e) {
+                unset($e);
+            }
         }
 
         if ($this->has('url.segment')) {
-            $this->paginator()->setSegmenting($this->get('url.segment'));
+            $this->paginator()->setSegmenting(filter_var($this->get('url.segment'), FILTER_VALIDATE_BOOLEAN));
         }
 
         if ($this->has('url.index')) {
-            $this->paginator()->setPageIndex($this->get('url.index'));
+            try {
+                $this->paginator()->setPageIndex($this->get('url.index'));
+            } catch (Throwable $e) {
+                unset($e);
+            }
         }
 
         if (!is_array($this->get('url'))) {
-            $this->paginator()->setBaseUrl($this->get('url'));
+            try {
+                $this->paginator()->setBaseUrl($this->get('url'));
+            } catch (Throwable $e) {
+                unset($e);
+            }
         }
     }
 
@@ -255,8 +285,9 @@ class PaginationPartialDriver extends PartialDriver implements PaginationPartial
         if ($this->viewEngine === null) {
             $this->viewEngine = parent::view();
 
-            $this->view()->setLoader(PaginationPartialViewLoader::class);
+            $this->viewEngine->setLoader(PaginationPartialViewLoader::class);
         }
+
         return parent::view($view, $data);
     }
 
@@ -265,6 +296,6 @@ class PaginationPartialDriver extends PartialDriver implements PaginationPartial
      */
     public function viewDirectory(): string
     {
-        return $this->partial()->resources('/views/pagination');
+        return $this->pagination()->resources('/views/partial/pagination');
     }
 }

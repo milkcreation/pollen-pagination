@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Pollen\Pagination\Partial;
 
+use Pollen\Pagination\PaginationProxyInterface;
 use Pollen\Pagination\PaginatorInterface;
 use Pollen\Partial\PartialDriverInterface;
 
-interface PaginationPartialDriverInterface extends PartialDriverInterface
+interface PaginationPartialInterface extends PaginationProxyInterface, PartialDriverInterface
 {
     /**
      * Récupération d'un séparateur de nombre.
