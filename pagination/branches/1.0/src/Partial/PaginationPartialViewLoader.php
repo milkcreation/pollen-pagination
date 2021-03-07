@@ -12,17 +12,17 @@ class PaginationPartialViewLoader extends PartialViewLoader
     /**
      * Récupération de l'instance de délégation.
      *
-     * @return PaginationPartialDriverInterface
+     * @return PaginationPartialInterface
      */
-    protected function getDelegate(): PaginationPartialDriverInterface
+    protected function getDelegate(): PaginationPartialInterface
     {
-        /** @var PaginationPartialDriverInterface|object|null $delegate */
+        /** @var PaginationPartialInterface|object|null $delegate */
         $delegate = $this->engine->getDelegate();
-        if ($delegate instanceof PaginationPartialDriverInterface) {
+        if ($delegate instanceof PaginationPartialInterface) {
             return $delegate;
         }
 
-        throw new RuntimeException('ViewLoader must have a delegate PaginationPartial Driver instance');
+        throw new RuntimeException('ViewLoader requires a delegate PaginationPartial instance');
     }
 
     /**

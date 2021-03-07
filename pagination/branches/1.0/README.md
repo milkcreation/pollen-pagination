@@ -9,3 +9,43 @@
 ```bash
 composer require pollen-solutions/pagination
 ```
+
+## Basic Usage
+
+```php
+use Pollen\Pagination\PaginationManager;
+use Pollen\Pagination\Paginator;
+
+$pagination = new PaginationManager();
+$paginator = new Paginator(
+    [
+        'per_page' => 20,
+        'total'    => 60,
+    ]
+);
+
+var_dump($paginator->toArray());
+
+$pagination->setPaginator($paginator);
+
+echo $pagination;
+```
+
+## Wordpress Usage
+In this example, we consider that the current HTTP request corresponds to a search results page.
+ex. https://example.com/?s=a
+
+```php
+use Pollen\Pagination\PaginationManager;
+
+add_action('wp', function () {
+    echo new PaginationManager();
+    exit;
+});
+```
+
+## Through a controller
+
+```php
+
+```

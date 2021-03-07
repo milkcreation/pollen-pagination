@@ -30,11 +30,39 @@ interface PaginatorInterface
     public function getCurrentPage(): int;
 
     /**
+     * Récupération de l'url vers la première page d'éléments.
+     *
+     * @return string
+     */
+    public function getFirstPageUrl(): string;
+
+    /**
      * Récupération du numéro de la dernière page.
      *
      * @return int
      */
     public function getLastPage(): int;
+
+    /**
+     * Récupération de l'url vers la dernière page d'éléments.
+     *
+     * @return string
+     */
+    public function getLastPageUrl(): string;
+
+    /**
+     * Récupération du numéro de la page suivante d'éléments.
+     *
+     * @return int
+     */
+    public function getNextPage(): int;
+
+    /**
+     * Récupération de l'url vers la page suivante d'éléments.
+     *
+     * @return string
+     */
+    public function getNextPageUrl(): string;
 
     /**
      * Récupération de la ligne de démarrage du traitement.
@@ -64,6 +92,20 @@ interface PaginatorInterface
      * @return int|null
      */
     public function getPerPage(): ?int;
+
+    /**
+     * Récupération du numéro de la page précédente d'éléments.
+     *
+     * @return int
+     */
+    public function getPreviousPage(): int;
+
+    /**
+     * Récupération de l'url vers la page précédente d'éléments.
+     *
+     * @return string
+     */
+    public function getPreviousPageUrl(): string;
 
     /**
      * Récupération du nombre total d'éléments.
@@ -99,11 +141,11 @@ interface PaginatorInterface
      * Définition de l'url de base utilisé pour les liens de pagination.
      * {@internal %d représente le numéro de page.}
      *
-     * @param string|null $base_url
+     * @param string $baseUrl
      *
      * @return static
      */
-    public function setBaseUrl(?string $base_url = null): PaginatorInterface;
+    public function setBaseUrl(string $baseUrl): PaginatorInterface;
 
     /**
      * Définition du nombre d'éléments courants trouvés.
@@ -126,11 +168,11 @@ interface PaginatorInterface
     /**
      * Définition du numéro de la dernière page.
      *
-     * @param int $last_page
+     * @param int $lastPage
      *
      * @return static
      */
-    public function setLastPage(int $last_page): PaginatorInterface;
+    public function setLastPage(int $lastPage): PaginatorInterface;
 
     /**
      * Définition de la ligne de démarrage du traitement de récupération des éléments.
@@ -153,11 +195,11 @@ interface PaginatorInterface
     /**
      * Définition du nombre total d'éléments par page.
      *
-     * @param int|null $per_page
+     * @param int|null $perPage
      *
      * @return static
      */
-    public function setPerPage(?int $per_page = null): PaginatorInterface;
+    public function setPerPage(?int $perPage= null): PaginatorInterface;
 
     /**
      * Activation de l'url segmentée.
