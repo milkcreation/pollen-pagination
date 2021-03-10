@@ -25,9 +25,20 @@ class WpQueryPaginator extends Paginator implements WpQueryPaginatorInterface
             throw new RuntimeException('WpQueryPaginator must have a valid WP_Query instance to run');
         }
 
+        $this->queryBuilder = $wpQuery;
         $args = $this->getWpQueryArgs($wpQuery);
 
         parent::__construct($args);
+    }
+
+    /**
+     * Récupération de l'instance du générateur de requête
+     *
+     * @return WP_Query|null
+     */
+    public function getQueryBuilder(): ?object
+    {
+        return $this->queryBuilder instanceof WP_Query ? $this->queryBuilder : null;
     }
 
     /**
@@ -40,12 +51,12 @@ class WpQueryPaginator extends Paginator implements WpQueryPaginatorInterface
         $current = $wpQuery->get('paged') ?: 1;
 
         return [
-            'count'        => (int)$wpQuery->post_count,
-            'current_page' => $per_page < 0 ? 1 : (int)$current,
-            'last_page'    => $per_page < 0 ? 1 : (int)$wpQuery->max_num_pages,
-            'per_page'     => $per_page,
-            'query_obj'    => $wpQuery,
-            'total'        => $total,
+            'count'         => (int)$wpQuery->post_count,
+            'current_page'  => $per_page < 0 ? 1 : (int)$current,
+            'last_page'     => $per_page < 0 ? 1 : (int)$wpQuery->max_num_pages,
+            'per_page'      => $per_page,
+            'query_builder' => $wpQuery,
+            'total'         => $total,
         ];
     }
 }

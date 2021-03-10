@@ -108,6 +108,13 @@ interface PaginatorInterface
     public function getPreviousPageUrl(): string;
 
     /**
+     * Récupération de l'instance du générateur de requête
+     *
+     * @return object|null
+     */
+    public function getQueryBuilder(): ?object;
+
+    /**
      * Récupération du nombre total d'éléments.
      *
      * @return int

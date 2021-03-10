@@ -51,7 +51,7 @@ class PaginationManager implements PaginationManagerInterface
      *
      * @return void
      */
-    public function __construct(array $config = [], Container $container = null)
+    public function __construct(array $config = [], ?Container $container = null)
     {
         $this->setConfig($config);
 

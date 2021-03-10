@@ -15,13 +15,11 @@ class WpPaginationPartial extends PaginationPartial
      */
     public function defaultParams(): array
     {
-        global $wp_query;
-
         return array_merge(parent::defaultParams(), [
             /**
-             * @var array|PaginatorInterface|object $query
+             * @var array|PaginatorInterface|WP_Query $query
              */
-            'paginator' => $wp_query,
+            'paginator' => null,
         ]);
     }
 
@@ -37,8 +35,10 @@ class WpPaginationPartial extends PaginationPartial
 
             if ($paginator instanceof WP_Query) {
                 $this->paginator = new WpQueryPaginator($paginator);
+            } elseif (($paginator = parent::paginator()) && $paginator->getQueryBuilder() instanceof WP_Query) {
+                $this->paginator = $paginator;
             } else {
-                $this->paginator = parent::paginator();
+                $this->paginator = new WpQueryPaginator();
             }
         }
 
