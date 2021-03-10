@@ -57,6 +57,12 @@ class Paginator implements PaginatorInterface
     protected $perPage;
 
     /**
+     * Instance générateur de requête.
+     * @var object|null
+     */
+    protected $queryBuilder;
+
+    /**
      * Indicateur d'url basée sur la segmentation.
      * @internal false : {{ base_url }}/?{{ pageIndex }}={{ num }} | true :{{ base_url }}/{{ pageIndex }}/{{ num }}
      *
@@ -220,6 +226,14 @@ class Paginator implements PaginatorInterface
     /**
      * @inheritDoc
      */
+    public function getQueryBuilder(): ?object
+    {
+        return $this->queryBuilder;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getTotal(): int
     {
         return $this->total;
@@ -256,6 +270,10 @@ class Paginator implements PaginatorInterface
 
         if ($currentPage = $args['current_page'] ?? null) {
             $this->setCurrentPage($currentPage);
+        }
+
+        if ($lastPage = $args['last_page'] ?? null) {
+            $this->setLastPage($lastPage);
         }
 
         if ($pageIndex = $args['page_index'] ?? null) {

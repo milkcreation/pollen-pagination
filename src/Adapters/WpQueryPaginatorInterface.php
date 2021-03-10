@@ -17,4 +17,11 @@ interface WpQueryPaginatorInterface extends PaginatorInterface
      * @return array
      */
     public function getWpQueryArgs(WP_Query $wpQuery): array;
+
+    /**
+     * Récupération de l'instance du générateur de requête
+     *
+     * @return WP_Query|null
+     */
+    public function getQueryBuilder(): ?object;
 }
