@@ -18,7 +18,7 @@ interface PaginationProxyInterface
      *
      * @param PaginationManagerInterface $pagination
      *
-     * @return static
+     * @return void
      */
-    public function setPaginationManager(PaginationManagerInterface $pagination): self;
+    public function setPaginationManager(PaginationManagerInterface $pagination): void;
 }
