@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pollen\Pagination;
 
-use Psr\Container\ContainerInterface as Container;
+use Pollen\Support\StaticProxy;
 use RuntimeException;
 
 trait PaginationProxy
@@ -23,16 +23,14 @@ trait PaginationProxy
     public function pagination(): PaginationManagerInterface
     {
         if ($this->paginationManager === null) {
-            $container = method_exists($this, 'getContainer') ? $this->getContainer() : null;
-
-            if ($container instanceof Container && $container->has(PaginationManagerInterface::class)) {
-                $this->paginationManager = $container->get(PaginationManagerInterface::class);
-            } else {
-                try {
-                    $this->paginationManager = PaginationManager::getInstance();
-                } catch (RuntimeException $e) {
-                    $this->paginationManager = new PaginationManager();
-                }
+            try {
+                $this->paginationManager = PaginationManager::getInstance();
+            } catch (RuntimeException $e) {
+                $this->paginationManager = StaticProxy::getProxyInstance(
+                    PaginationManagerInterface::class,
+                    PaginationManager::class,
+                    method_exists($this, 'getContainer') ? $this->getContainer() : null
+                );
             }
         }
 
