@@ -8,17 +8,17 @@ use Pollen\Pagination\Adapters\WpPaginationAdapter;
 use Pollen\Pagination\Partial\PaginationPartial;
 use Pollen\Support\Concerns\BootableTrait;
 use Pollen\Support\Concerns\ConfigBagAwareTrait;
+use Pollen\Support\Concerns\ResourcesAwareTrait;
 use Pollen\Support\Exception\ManagerRuntimeException;
-use Pollen\Support\Filesystem;
 use Pollen\Support\Proxy\ContainerProxy;
 use Pollen\Support\Proxy\PartialProxy;
 use Psr\Container\ContainerInterface as Container;
-use RuntimeException;
 
 class PaginationManager implements PaginationManagerInterface
 {
     use BootableTrait;
     use ConfigBagAwareTrait;
+    use ResourcesAwareTrait;
     use ContainerProxy;
     use PartialProxy;
 
@@ -41,12 +41,6 @@ class PaginationManager implements PaginationManagerInterface
     protected $paginator;
 
     /**
-     * Chemin vers le répertoire des ressources.
-     * @var string|null
-     */
-    protected $resourcesBaseDir;
-
-    /**
      * @param array $config
      * @param Container|null $container
      *
@@ -59,6 +53,8 @@ class PaginationManager implements PaginationManagerInterface
         if ($container !== null) {
             $this->setContainer($container);
         }
+
+        $this->setResourcesBaseDir(dirname(__DIR__) . '/resources');
 
         if ($this->config('boot_enabled', true)) {
             $this->boot();
@@ -135,36 +131,6 @@ class PaginationManager implements PaginationManagerInterface
     public function render(array $args = []): string
     {
         return (string) $this->partial()->get('pagination', $args);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function resources(?string $path = null): string
-    {
-        if ($this->resourcesBaseDir === null) {
-            $this->resourcesBaseDir = Filesystem::normalizePath(
-                realpath(
-                    dirname(__DIR__) . '/resources/'
-                )
-            );
-
-            if (!file_exists($this->resourcesBaseDir)) {
-                throw new RuntimeException('Outdated ressources directory unreachable');
-            }
-        }
-
-        return is_null($path) ? $this->resourcesBaseDir : $this->resourcesBaseDir . Filesystem::normalizePath($path);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setResourcesBaseDir(string $resourceBaseDir): PaginationManagerInterface
-    {
-        $this->resourcesBaseDir = Filesystem::normalizePath($resourceBaseDir);
-
-        return $this;
     }
 
     /**
