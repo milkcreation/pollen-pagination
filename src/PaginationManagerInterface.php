@@ -6,12 +6,14 @@ namespace Pollen\Pagination;
 
 use Pollen\Support\Concerns\BootableTraitInterface;
 use Pollen\Support\Concerns\ConfigBagAwareTraitInterface;
+use Pollen\Support\Concerns\ResourcesAwareTraitInterface;
 use Pollen\Support\Proxy\ContainerProxyInterface;
 use Pollen\Support\Proxy\PartialProxyInterface;
 
 interface PaginationManagerInterface extends
     BootableTraitInterface,
     ConfigBagAwareTraitInterface,
+    ResourcesAwareTraitInterface,
     ContainerProxyInterface,
     PartialProxyInterface
 {
@@ -52,24 +54,6 @@ interface PaginationManagerInterface extends
      * @return string
      */
     public function render(array $args = []): string;
-
-    /**
-     * Chemin absolu vers une ressource (fichier|répertoire).
-     *
-     * @param string|null $path Chemin relatif vers la ressource.
-     *
-     * @return string
-     */
-    public function resources(?string $path = null): string;
-
-    /**
-     * Définition du chemin absolu vers le répertoire des ressources.
-     *
-     * @param string $resourceBaseDir
-     *
-     * @return static
-     */
-    public function setResourcesBaseDir(string $resourceBaseDir): PaginationManagerInterface;
 
     /**
      * Définition de l'adapteur associé.
