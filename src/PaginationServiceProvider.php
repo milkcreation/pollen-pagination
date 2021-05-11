@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Pollen\Pagination;
 
-use Pollen\Container\BaseServiceProvider;
+use Pollen\Container\BootableServiceProvider;
 use Pollen\Pagination\Adapters\WpPaginationAdapter;
 use Pollen\Pagination\Partial\PaginationPartial;
 use Pollen\Partial\PartialManagerInterface;
 
-class PaginationServiceProvider extends BaseServiceProvider
+class PaginationServiceProvider extends BootableServiceProvider
 {
     /**
      * @var string[]
