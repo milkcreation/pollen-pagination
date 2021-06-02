@@ -189,7 +189,7 @@ class PaginationPartial extends PartialDriver implements PaginationPartialInterf
         ];
 
         foreach (array_keys($defaults) as $key) {
-            $attrs = $this->get("links.{$key}", []);
+            $attrs = $this->get("links.$key", []);
 
             if ($attrs === false) {
                 $attrs = [];
@@ -201,7 +201,7 @@ class PaginationPartial extends PartialDriver implements PaginationPartialInterf
                 $attrs = array_merge($defaults[$key], $attrs);
             }
 
-            $this->set("links.{$key}", $attrs);
+            $this->set("links.$key", $attrs);
         }
     }
 
