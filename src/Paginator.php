@@ -189,7 +189,7 @@ class Paginator implements PaginatorInterface
         if ($this->isSegmented()) {
             $url = $url->deleteSegment("/{$this->getPageIndex()}/\d+");
 
-            return $num > 1 ? $url->appendSegment("/{$this->getPageIndex()}/{$num}")->render() : $url->render();
+            return $num > 1 ? $url->appendSegment("/{$this->getPageIndex()}/$num")->render() : $url->render();
         }
 
         $url = $url->without([$this->getPageIndex()]);
