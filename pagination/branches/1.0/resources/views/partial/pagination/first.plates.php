@@ -1,6 +1,6 @@
 <?php
 /**
- * @var Pollen\Pagination\Partial\PaginationPartialViewLoader $this
+ * @var Pollen\Pagination\Partial\PaginationPartialTemplate $this
  */
 ?>
 <?php if ($this->getCurrentPage() > 1) : ?>

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Pollen\Pagination\Partial;
 
-use Pollen\Partial\PartialViewLoader;
+use Pollen\Partial\PartialTemplate;
 use RuntimeException;
 
-class PaginationPartialViewLoader extends PartialViewLoader
+class PaginationPartialTemplate extends PartialTemplate
 {
     /**
      * Récupération de l'instance de délégation.
@@ -22,7 +22,7 @@ class PaginationPartialViewLoader extends PartialViewLoader
             return $delegate;
         }
 
-        throw new RuntimeException('ViewLoader requires a delegate PaginationPartial instance');
+        throw new RuntimeException('PaginationTemplate requires a delegate PaginationPartial instance');
     }
 
     /**

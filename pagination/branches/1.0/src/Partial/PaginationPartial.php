@@ -10,6 +10,7 @@ use Pollen\Pagination\Paginator;
 use Pollen\Pagination\PaginatorInterface;
 use Pollen\Partial\PartialDriver;
 use Pollen\Partial\PartialManagerInterface;
+use Pollen\View\Engines\Plates\PlatesViewEngine;
 use Throwable;
 
 class PaginationPartial extends PartialDriver implements PaginationPartialInterface
@@ -282,10 +283,13 @@ class PaginationPartial extends PartialDriver implements PaginationPartialInterf
      */
     public function view(?string $view = null, array $data = [])
     {
-        if ($this->viewEngine === null) {
-            $this->viewEngine = parent::view();
+        if ($this->view === null) {
+            $this->view = parent::view();
 
-            $this->viewEngine->setLoader(PaginationPartialViewLoader::class);
+            $engine = $this->view->getEngine();
+            if ($engine instanceof PlatesViewEngine) {
+                $engine->setTemplateClass(PaginationPartialTemplate::class);
+            }
         }
 
         return parent::view($view, $data);

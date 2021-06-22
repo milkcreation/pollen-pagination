@@ -1,6 +1,6 @@
 <?php
 /**
- * @var Pollen\Pagination\Partial\PaginationPartialViewLoader $this
+ * @var Pollen\Pagination\Partial\PaginationPartialTemplate $this
  */
 ?>
 <?php foreach ($this->get('numbers', []) as $number) : ?>
