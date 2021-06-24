@@ -17,11 +17,7 @@ class PaginationPartial extends PartialDriver implements PaginationPartialInterf
 {
     use PaginationProxy;
 
-    /**
-     * Instance du gestionnaire de pagination.
-     * @var PaginatorInterface
-     */
-    protected $paginator;
+    protected ?PaginatorInterface $paginator = null;
 
     /**
      * @param PaginationManagerInterface $pagination
@@ -281,18 +277,21 @@ class PaginationPartial extends PartialDriver implements PaginationPartialInterf
     /**
      * @inheritDoc
      */
-    public function view(?string $view = null, array $data = [])
+    public function view(?string $name = null, array $data = [])
     {
         if ($this->view === null) {
             $this->view = parent::view();
+            $this->view
+                ->addFunction('getCurrentPage', function (): int {
+                    return $this->paginator()->getCurrentPage();
+                })
+                ->addFunction('getLastPage', function (): int {
+                    return $this->paginator()->getLastPage();
+                });
 
-            $engine = $this->view->getEngine();
-            if ($engine instanceof PlatesViewEngine) {
-                $engine->setTemplateClass(PaginationPartialTemplate::class);
-            }
         }
 
-        return parent::view($view, $data);
+        return parent::view($name, $data);
     }
 
     /**
