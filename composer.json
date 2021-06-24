@@ -7,13 +7,12 @@
     "plugins",
     "pagination"
   ],
-  "time": "2021-06-22",
+  "time": "2021-06-24",
   "license": "MIT",
   "authors": [
     {
       "name": "Jordy Manner",
-      "email": "jordy@presstify.com",
-      "role": "Developper"
+      "email": "jordy@presstify.com"
     }
   ],
   "repositories": [
@@ -23,9 +22,13 @@
     }
   ],
   "require": {
-    "composer/installers": "~1.0",
+    "php": "^7.4 || ^8.0",
     "pollen-solutions/http": "^1.0",
     "pollen-solutions/support": "^1.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.0",
+    "roave/security-advisories": "dev-latest"
   },
   "autoload": {
     "psr-4": {
