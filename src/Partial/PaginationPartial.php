@@ -10,7 +10,6 @@ use Pollen\Pagination\Paginator;
 use Pollen\Pagination\PaginatorInterface;
 use Pollen\Partial\PartialDriver;
 use Pollen\Partial\PartialManagerInterface;
-use Pollen\View\Engines\Plates\PlatesViewEngine;
 use Throwable;
 
 class PaginationPartial extends PartialDriver implements PaginationPartialInterface
@@ -282,10 +281,10 @@ class PaginationPartial extends PartialDriver implements PaginationPartialInterf
         if ($this->view === null) {
             $this->view = parent::view();
             $this->view
-                ->addFunction('getCurrentPage', function (): int {
+                ->addExtension('getCurrentPage', function (): int {
                     return $this->paginator()->getCurrentPage();
                 })
-                ->addFunction('getLastPage', function (): int {
+                ->addExtension('getLastPage', function (): int {
                     return $this->paginator()->getLastPage();
                 });
 
