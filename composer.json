@@ -1,24 +1,18 @@
 {
   "name": "pollen-solutions/pagination",
   "description": "Pollen Pagination Component",
-  "homepage": "https://www.presstify.com/pollen-solutions/pagination/",
+  "homepage": "https://github.com/milkcreation/pollen-pagination.git",
   "keywords": [
     "presstify",
     "plugins",
     "pagination"
   ],
-  "time": "2021-06-29",
+  "time": "2021-09-15",
   "license": "MIT",
   "authors": [
     {
       "name": "Jordy Manner",
       "email": "jordy@presstify.com"
-    }
-  ],
-  "repositories": [
-    {
-      "type": "composer",
-      "url": "https://composer.presstify.com/pollen-solutions/"
     }
   ],
   "require": {
